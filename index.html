@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PingNews</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="imagens/logo.png" type="imagens/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect('http://127.0.0.1:5000');
+
+        socket.on('nova_noticia', function(data) {
+            const container = document.getElementById('caixaNoticias');
+            const noticia = document.createElement('div');
+            noticia.classList.add('noticia');
+            noticia.innerHTML = `<strong>${data.fonte}</strong>: <b>${data.titulo}</b><br>${data.resumo}`;
+            container.prepend(noticia);
+        });
+    </script>
+</head>
+<body>
+    <div id="tela_carregando">
+        <img src="imagens/logo.png">
+    </div>
+      
+    <div id="conteudo" style="display: none;">
+        <div class="faixa_topo"></div>
+        <div class="caixa_branca" id="caixaNoticias">
+        </div>
+
+        <div><img src="imagens/logo.png" id="image_faixa"></div>
+
+        <div id="texto_faixa">
+            <h1>PingNews</h1>
+        </div>
+
+        <div>
+           <img src="imagens/lupa.png" id="lupa">
+        </div>
+
+        <div>
+            <img src="imagens/engrenagem.png" id="engrenagem">
+        </div>
+
+        <input 
+        type="text" 
+        id="pesquisa" 
+        placeholder="Pesquise pelo site de notícias. Ex: CNN Brasil, G1, UOL e Globo">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
