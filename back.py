@@ -18,7 +18,7 @@ resumidor = pipeline("summarization", model="facebook/bart-large-cnn")
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, async_mode="eventlet")
+socketio = SocketIO(app, async_mode="threading")
 
 news_sites = {
     "G1": "https://g1.globo.com",
