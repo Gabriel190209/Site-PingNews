@@ -10,8 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     tela.style.display = "none";
 
-    // Alteração aqui: substituindo a URL local pelo backend no Render
-    fetch("https://pingnews-backend.onrender.com/noticias")
+    fetch("http://127.0.0.1:5000/noticias")
       .then(res => {
         if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
         return res.json();
@@ -19,15 +18,11 @@ window.addEventListener("DOMContentLoaded", () => {
       .then(novasNoticias => {
         console.log("Novas notícias recebidas:", novasNoticias);
 
-        // Recupera do localStorage todas as notícias antigas (objetos completos)
         const noticiasAntigas = JSON.parse(localStorage.getItem("noticiasVistas")) || [];
-
-        // Conjunto com chave única de cada notícia existente (evita repetição)
         const chavesAntigas = new Set(
           noticiasAntigas.map(n => `${n.titulo}-${n.fonte}-${n.resumo}`)
         );
 
-        // Filtra as novas que ainda não foram vistas
         const novasUnicas = novasNoticias.filter(nova => {
           const chave = `${nova.titulo}-${nova.fonte}-${nova.resumo}`;
           if (chavesAntigas.has(chave)) return false;
@@ -35,14 +30,10 @@ window.addEventListener("DOMContentLoaded", () => {
           return true;
         });
 
-        // Junta as novas com as antigas e salva no localStorage
         const todasAsNoticias = [...novasUnicas, ...noticiasAntigas];
         localStorage.setItem("noticiasVistas", JSON.stringify(todasAsNoticias));
 
-        // Exibe tudo (ordenado com novas no topo)
         exibirNoticias(todasAsNoticias);
-
-        // Aplica filtro de pesquisa atual
         aplicarFiltro(inputPesquisa.value.trim().toLowerCase());
       })
       .catch(err => {

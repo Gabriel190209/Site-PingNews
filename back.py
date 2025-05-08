@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from bs4 import BeautifulSoup
@@ -26,6 +26,21 @@ news_sites = {
     "UOL": "https://noticias.uol.com.br",
     "Globo": "https://globo.com"
 }
+
+def inicializar_banco():
+    conn = sqlite3.connect("noticias.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS noticias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fonte TEXT,
+            titulo TEXT,
+            resumo TEXT,
+            UNIQUE(titulo, resumo)
+        )
+    """)
+    conn.commit()
+    conn.close()
 
 def buscar_links(site_url, max_links=3):
     try:
@@ -128,7 +143,6 @@ def get_noticias():
 
     return jsonify(unicas)
 
-
 @app.route("/")
 def index():
     return send_from_directory(".", "index.html")
@@ -146,5 +160,6 @@ def handle_disconnect():
     print("Cliente desconectado.")
 
 if __name__ == "__main__":
+    inicializar_banco()
     threading.Thread(target=processar_noticias, daemon=True).start()
     socketio.run(app, debug=False, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)
