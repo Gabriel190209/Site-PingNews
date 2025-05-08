@@ -10,7 +10,8 @@ window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     tela.style.display = "none";
 
-    fetch("http://127.0.0.1:5000/noticias")
+    // Alteração aqui: substituindo a URL local pelo backend no Render
+    fetch("https://pingnews-backend.onrender.com/noticias")
       .then(res => {
         if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
         return res.json();
