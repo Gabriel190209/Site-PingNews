@@ -10,6 +10,8 @@ import os
 import threading
 import time
 
+port = int(os.environ.get("PORT", 5000))
+
 load_dotenv()
 
 resumidor = pipeline("summarization", model="facebook/bart-large-cnn")
@@ -145,4 +147,4 @@ def handle_disconnect():
 
 if __name__ == "__main__":
     threading.Thread(target=processar_noticias, daemon=True).start()
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, host="0.0.0.0", port=port)
