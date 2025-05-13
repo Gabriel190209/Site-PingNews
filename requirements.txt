@@ -1,6 +1,8 @@
 flask
 flask-cors
 flask-socketio
+eventlet
+gunicorn
 requests
 beautifulsoup4
 transformers

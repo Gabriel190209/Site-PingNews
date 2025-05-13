@@ -1,6 +1,6 @@
 const socket = io.connect(window.location.origin);
 const caixa = document.getElementById("caixa_branca");
-const carregando = document.getElementById("carregando");
+const carregando = document.getElementById("tela_carregando");
 const searchInput = document.getElementById("searchInput");
 
 let noticiasExibidas = new Set();

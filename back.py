@@ -18,7 +18,7 @@ resumidor = pipeline("summarization", model="facebook/bart-large-cnn")
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, async_mode="threading")
+socketio = SocketIO(app, async_mode="eventlet")
 
 news_sites = {
     "G1": "https://g1.globo.com",
@@ -158,4 +158,4 @@ def handle_disconnect():
 if __name__ == "__main__":
     inicializar_banco()
     threading.Thread(target=processar_noticias, daemon=True).start()
-    socketio.run(app, debug=False, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=port)
