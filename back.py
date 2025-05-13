@@ -47,7 +47,6 @@ def buscar_links(site_url, max_links=3):
         response = requests.get(site_url, timeout=5)
         soup = BeautifulSoup(response.content, "html.parser")
         links = [a['href'] for a in soup.find_all('a', href=True)]
-
         links_validos = [
             link for link in links
             if link.startswith("http")
@@ -56,7 +55,6 @@ def buscar_links(site_url, max_links=3):
             and "#" not in link
             and len(link.split("/")) > 4
         ]
-
         return list(dict.fromkeys(links_validos))[:max_links]
     except Exception as e:
         print(f"Erro ao buscar links: {e}")
@@ -66,7 +64,6 @@ def extrair_titulo_e_texto(link):
     try:
         response = requests.get(link, timeout=5)
         soup = BeautifulSoup(response.content, "html.parser")
-
         titulo = soup.title.string.strip() if soup.title and soup.title.string else "Sem título"
         paragrafos = soup.find_all('p')
         texto = " ".join(p.get_text() for p in paragrafos)
@@ -123,7 +120,6 @@ def processar_noticias():
 def get_noticias():
     conn = sqlite3.connect('noticias.db')
     cursor = conn.cursor()
-
     cursor.execute("SELECT titulo, fonte, resumo FROM noticias ORDER BY id DESC")
     noticias = cursor.fetchall()
     conn.close()
