@@ -1,90 +1,63 @@
-window.addEventListener("DOMContentLoaded", () => {
-  const tela = document.getElementById("tela_carregando");
-  const conteudo = document.getElementById("conteudo");
-  const caixa = document.getElementById("caixaNoticias");
-  const inputPesquisa = document.getElementById("pesquisa");
+const socket = io.connect(window.location.origin);
+const caixa = document.getElementById("caixa_branca");
+const carregando = document.getElementById("carregando");
+const searchInput = document.getElementById("searchInput");
 
-  conteudo.style.display = "block";
-  tela.style.opacity = "0";
+let noticiasExibidas = new Set();
 
-  setTimeout(() => {
-    tela.style.display = "none";
+function normalizarTexto(texto) {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 
-    fetch("http://127.0.0.1:5000/noticias")
-      .then(res => {
-        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
-        return res.json();
-      })
-      .then(novasNoticias => {
-        console.log("Novas notícias recebidas:", novasNoticias);
+let noticiasSalvas = JSON.parse(localStorage.getItem("noticias")) || [];
 
-        const noticiasAntigas = JSON.parse(localStorage.getItem("noticiasVistas")) || [];
-        const chavesAntigas = new Set(
-          noticiasAntigas.map(n => `${n.titulo}-${n.fonte}-${n.resumo}`)
-        );
+function exibirNoticia(noticia, noTopo = false) {
+    const idNoticia = noticia.titulo + noticia.fonte;
+    if (noticiasExibidas.has(idNoticia)) return;
 
-        const novasUnicas = novasNoticias.filter(nova => {
-          const chave = `${nova.titulo}-${nova.fonte}-${nova.resumo}`;
-          if (chavesAntigas.has(chave)) return false;
-          chavesAntigas.add(chave);
-          return true;
-        });
-
-        const todasAsNoticias = [...novasUnicas, ...noticiasAntigas];
-        localStorage.setItem("noticiasVistas", JSON.stringify(todasAsNoticias));
-
-        exibirNoticias(todasAsNoticias);
-        aplicarFiltro(inputPesquisa.value.trim().toLowerCase());
-      })
-      .catch(err => {
-        console.error("Erro ao buscar notícias:", err);
-      });
-  }, 2000);
-
-  inputPesquisa.addEventListener("input", () => {
-    aplicarFiltro(inputPesquisa.value.trim().toLowerCase());
-  });
-
-  function exibirNoticias(noticias) {
-    caixa.innerHTML = "";
-    noticias.forEach(noticia => {
-      const bloco = document.createElement("div");
-      bloco.className = "noticia";
-      bloco.innerHTML = `
+    const div = document.createElement("div");
+    div.className = "noticia";
+    div.innerHTML = `
         <h3>${noticia.titulo}</h3>
-        <p><strong>${noticia.fonte}</strong></p>
-        <ul>${noticia.resumo
-          .split('\n')
-          .map(item => `<li>${item}</li>`)
-          .join('')}</ul>
-      `;
-      caixa.appendChild(bloco);
-    });
-  }
+        <p>${noticia.resumo}</p>
+        <span class="fonte">${noticia.fonte}</span>
+    `;
+    if (noTopo) {
+        caixa.insertBefore(div, caixa.firstChild);
+    } else {
+        caixa.appendChild(div);
+    }
+    noticiasExibidas.add(idNoticia);
+}
 
-  function aplicarFiltro(termo) {
-    const noticias = document.querySelectorAll(".noticia");
-    const fontesValidas = {
-      "cnn": "cnn brasil",
-      "g1": "g1",
-      "globo": "globo",
-      "uol": "uol"
-    };
+noticiasSalvas.forEach(noticia => exibirNoticia(noticia));
 
-    const termoNormalizado = termo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-    noticias.forEach(noticia => {
-      const fonte = noticia.querySelector("p strong")?.textContent
-        ?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() || "";
-
-      if (
-        termoNormalizado === "" ||
-        fonte.includes(fontesValidas[termoNormalizado] || "")
-      ) {
-        noticia.style.display = "block";
-      } else {
-        noticia.style.display = "none";
-      }
-    });
-  }
+searchInput.addEventListener("input", () => {
+    const termo = normalizarTexto(searchInput.value);
+    caixa.innerHTML = "";
+    noticiasExibidas.clear();
+    noticiasSalvas
+        .filter(n => normalizarTexto(n.fonte).includes(termo))
+        .forEach(n => exibirNoticia(n));
 });
+
+socket.on("nova_noticia", (noticia) => {
+    exibirNoticia(noticia, true);
+    noticiasSalvas.unshift(noticia);
+    localStorage.setItem("noticias", JSON.stringify(noticiasSalvas));
+});
+
+fetch(window.location.origin + "/noticias")
+    .then(resp => resp.json())
+    .then(data => {
+        carregando.style.display = "none";
+        data.forEach(noticia => {
+            exibirNoticia(noticia, true);
+            noticiasSalvas.unshift(noticia);
+        });
+        localStorage.setItem("noticias", JSON.stringify(noticiasSalvas));
+    })
+    .catch(err => {
+        carregando.innerHTML = "<p>Erro ao carregar notícias.</p>";
+        console.error(err);
+    });

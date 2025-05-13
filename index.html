@@ -6,7 +6,7 @@
     <link rel="icon" href="imagens/logo.png" type="imagens/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
     <script>
-        const socket = io.connect('http://127.0.0.1:5000');
+        const socket = io.connect(window.location.origin);
 
         socket.on('nova_noticia', function(data) {
             const container = document.getElementById('caixaNoticias');
@@ -44,7 +44,7 @@
         <input 
         type="text" 
         id="pesquisa" 
-        placeholder="Pesquise pelo site de notícias. Ex: CNN Brasil, G1, UOL e Globo">
+        placeholder="Pesquise pelo site de notícias. Ex: CNN Brasil, G1 e Globo">
     </div>
 
     <script src="script.js"></script>
